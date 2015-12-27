@@ -7,7 +7,7 @@ __author__ = 'Maira'
 
 
 remove_punctuation = True
-remove_stop_word = True
+remove_stop_word = False
 regex = re.compile('[%s]' % re.escape(string.punctuation))
 cached_stop_words = []
 if remove_stop_word:

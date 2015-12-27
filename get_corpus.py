@@ -1,8 +1,20 @@
 import os
-from codecs import encode, decode
+from codecs import decode
+import string
+import re
 from pymongo import MongoClient
-
 __author__ = 'Maira'
+
+
+remove_punctuation = True
+remove_stop_word = True
+regex = re.compile('[%s]' % re.escape(string.punctuation))
+cached_stop_words = []
+if remove_stop_word:
+    with open('stopwords/english', 'r') as file:
+        for l in file:
+            for w in l.split():
+                cached_stop_words.append(w)
 
 
 def read_file_content(db, file):
@@ -11,13 +23,16 @@ def read_file_content(db, file):
         for line in f:
             for word in line.strip().split():
                 word = decode(word.strip(), 'latin2', 'ignore')
-                text.append(word)
-            if file.find("fortnow"):
-                c = "fortnow"
-            else:
-                c = "random"
-            d = {'content': text, 'category': c}
-            db.corpus.insert_one(d)
+                if remove_punctuation:
+                    word = regex.sub('', word)
+                if (not remove_stop_word or word not in cached_stop_words) and (word != ''):
+                    text.append(word)
+        if file.find("fortnow"):
+            c = "fortnow"
+        else:
+            c = "random"
+        d = {'content': text, 'category': c}
+        db.corpus.insert_one(d)
 
 
 def get_corpus():

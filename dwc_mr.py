@@ -21,9 +21,5 @@ reducer = Code("""
 """)
 
 
-def get_bag_of_words(db_name, condition):
-    db_name.corpus.map_reduce(mapper, reducer, "counts")
-    bag_of_words = db_name.counts.find(condition).sort([("value", -1)])
-    for w in bag_of_words:
-        print(w)
-
+def get_bag_of_words(db, query, limit):
+    return db.map_reduce(mapper, reducer, "counts", query=query, limit=limit)

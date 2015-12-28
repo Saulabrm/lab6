@@ -7,7 +7,7 @@ __author__ = 'Maira'
 
 
 remove_punctuation = True
-remove_stop_word = False
+remove_stop_word = True
 regex = re.compile('[%s]' % re.escape(string.punctuation))
 cached_stop_words = []
 if remove_stop_word:
@@ -18,6 +18,8 @@ if remove_stop_word:
 
 
 def read_file_content(db, file):
+    i = 0
+    j = 0
     with open("./blogfiles/" + file) as f:
         text = []
         for line in f:
@@ -27,11 +29,15 @@ def read_file_content(db, file):
                     word = regex.sub('', word)
                 if (not remove_stop_word or word not in cached_stop_words) and (word != ''):
                     text.append(word)
-        if file.find("fortnow"):
+        if "fortnow" in file:
             c = "fortnow"
+            file_id = file.replace("fortnow", "")
+            file_id = file_id.replace(".txt", "")
         else:
             c = "random"
-        d = {'content': text, 'category': c}
+            file_id = file.replace("random", "")
+            file_id = file_id.replace(".txt", "")
+        d = {'content': text, 'category': c, 'file_id': int(file_id)}
         db.corpus.insert_one(d)
 
 

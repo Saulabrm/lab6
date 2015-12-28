@@ -21,5 +21,5 @@ reducer = Code("""
 """)
 
 
-def get_bag_of_words(db, query, limit):
-    return db.map_reduce(mapper, reducer, "counts", query=query, limit=limit)
+def get_bag_of_words(db, query):
+    return db.map_reduce(mapper, reducer, "counts", query=query)

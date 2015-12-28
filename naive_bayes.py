@@ -15,19 +15,19 @@ class NaiveBayes:
         self.num_docs = 60.0
         self.num_docs_random = 30.0
         self.num_docs_fortnow = 30.0
-        self.random_docs_test = db.corpus.find({"category": "random"}).limit(30).skip(30)
-        self.fortnow_docs_test = db.corpus.find({"category": "fortnow"}).limit(30).skip(30)
-        dwr = dwc.get_bag_of_words(db.corpus, {"category": "random"}, 30)
+        self.random_docs_test = db.corpus.find({"category": "random", "file_id": {"$gt": 30}})
+        self.fortnow_docs_test = db.corpus.find({"category": "fortnow", "file_id": {"$gt": 30}})
+        dwr = dwc.get_bag_of_words(db.corpus, {"category": "random", "file_id": {"$lt": 31}})
         dwr = dwr.find()
         self.words_random = dict((r['_id'], r['value']) for r in dwr)
-        dwf = dwc.get_bag_of_words(db.corpus, {"category": "fortnow"}, 30)
+        dwf = dwc.get_bag_of_words(db.corpus, {"category": "fortnow", "file_id": {"$lt": 31}})
         dwf = dwf.find()
         self.words_fortnow = dict((r['_id'], r['value']) for r in dwf)
-        twcr = twc.get_bag_of_words(db.corpus, {"category": "random"}, 30)
+        twcr = twc.get_bag_of_words(db.corpus, {"category": "random", "file_id": {"$lt": 31}})
         twcr = twcr.find()
         for r in twcr:
             self.amount_words_random = r['value']
-        twcf = twc.get_bag_of_words(db.corpus, {"category": "fortnow"}, 30)
+        twcf = twc.get_bag_of_words(db.corpus, {"category": "fortnow", "file_id": {"$lt": 31}})
         twcf = twcf.find()
         for r in twcf:
             self.amount_words_fortnow = r['value']
@@ -55,12 +55,13 @@ class NaiveBayes:
             return self.num_docs_fortnow/self.num_docs
 
     def classify_doc(self, doc):
-        p_random = math.log(self.prob_class("random"), 10)
-        p_fortnow = math.log(self.prob_class("fortnow"), 10)
-        for w in doc:
-            p_random += math.log(self.prob_word_category(w, "random"), 10)
-            p_fortnow += math.log(self.prob_word_category(w, "fortnow"), 10)
-            
+        p_random = math.log(self.prob_class("random"))
+        p_fortnow = math.log(self.prob_class("fortnow"))
+        for word in doc:
+            p_random += math.log(self.prob_word_category(word, "random"))
+            p_fortnow += math.log(self.prob_word_category(word, "fortnow"))
+        #print(p_random)
+        #print(p_fortnow)
         if p_random > p_fortnow:
             return "random"
         return "fortnow"
@@ -70,9 +71,11 @@ class NaiveBayes:
         fortnow_results = []
         for d in self.random_docs_test:
             c = self.classify_doc(d["content"])
+            print(d["file_id"])
             random_results.append(c)
         for d in self.fortnow_docs_test:
             c = self.classify_doc(d["content"])
+            print(d["file_id"])
             fortnow_results.append(c)
         print(random_results)
         print(fortnow_results)

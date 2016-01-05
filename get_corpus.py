@@ -3,11 +3,14 @@ from codecs import decode
 import string
 import re
 from pymongo import MongoClient
+from nltk.stem.porter import PorterStemmer
 __author__ = 'Maira'
 
 
 remove_punctuation = True
 remove_stop_word = True
+stem = True
+stemmer = PorterStemmer()
 regex = re.compile('[%s]' % re.escape(string.punctuation))
 cached_stop_words = []
 if remove_stop_word:
@@ -27,6 +30,8 @@ def read_file_content(db, file):
                 word = decode(word.strip(), 'latin2', 'ignore')
                 if remove_punctuation:
                     word = regex.sub('', word)
+                if stem:
+                    word = stemmer.stem(word)
                 if (not remove_stop_word or word not in cached_stop_words) and (word != ''):
                     text.append(word)
         if "fortnow" in file:

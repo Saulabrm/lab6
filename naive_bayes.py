@@ -31,8 +31,9 @@ class NaiveBayes:
         twcf = twcf.find()
         for r in twcf:
             self.amount_words_fortnow = r['value']
-        self.vocabulary_random = len(self.words_random)
-        self.vocabulary_fortnow = len(self.words_fortnow)
+        v = self.words_random.copy()
+        v.update(self.words_fortnow)
+        self.vocabulary_size = len(v)
 
     def prob_word_category(self, word, category):
         if category == "random":
@@ -40,13 +41,13 @@ class NaiveBayes:
                 wf = self.words_random[word]
             else:
                 wf = 0
-            return (wf+1)/(self.amount_words_random + self.vocabulary_random)
+            return (wf+1)/(self.amount_words_random + self.vocabulary_size)
         else:
             if word in self.words_fortnow:
                 wf = self.words_fortnow[word]
             else:
                 wf = 0
-            return (wf+1)/(self.amount_words_fortnow + self.vocabulary_fortnow)
+            return (wf+1)/(self.amount_words_fortnow + self.vocabulary_size)
 
     def prob_class(self, category):
         if category == "random":
@@ -60,8 +61,6 @@ class NaiveBayes:
         for word in doc:
             p_random += math.log(self.prob_word_category(word, "random"))
             p_fortnow += math.log(self.prob_word_category(word, "fortnow"))
-        #print(p_random)
-        #print(p_fortnow)
         if p_random > p_fortnow:
             return "random"
         return "fortnow"
@@ -71,14 +70,16 @@ class NaiveBayes:
         fortnow_results = []
         for d in self.random_docs_test:
             c = self.classify_doc(d["content"])
-            print(d["file_id"])
             random_results.append(c)
         for d in self.fortnow_docs_test:
             c = self.classify_doc(d["content"])
-            print(d["file_id"])
             fortnow_results.append(c)
-        print(random_results)
-        print(fortnow_results)
+        print("             fortnow     random")
+        print("_______________________________")
+        print("fortnow        "+str(fortnow_results.count("fortnow"))+"           "+str(fortnow_results.count("random")))
+        print("random         "+str(random_results.count("fortnow"))+"          "+str(random_results.count("random")))
+
+
 
 
 nb = NaiveBayes()
